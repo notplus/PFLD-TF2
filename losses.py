@@ -3,7 +3,7 @@ Description:
 Author: notplus
 Date: 2021-11-18 10:29:32
 LastEditors: notplus
-LastEditTime: 2021-11-18 15:57:44
+LastEditTime: 2021-11-18 16:03:19
 FilePath: /losses.py
 
 Copyright (c) 2021 notplus
@@ -30,3 +30,15 @@ def loss_fn(attribute_gt, landmark_gt, euler_angle_gt, angle, landmarks):
 
     return weighted_loss, loss
 
+def wing_loss(y_true, y_pred, w=10.0, epsilon=2.0, N_LANDMARK=98):
+    y_pred = tf.reshape(y_pred, (-1, N_LANDMARK, 2))
+    y_true = tf.reshape(y_true, (-1, N_LANDMARK, 2))
+
+    x = y_true - y_pred
+    c = w * (1.0 - tf.math.log(1.0 + w / epsilon))
+    absolute_x = tf.abs(x)
+    losses = tf.where(w > absolute_x,
+                      w * tf.math.log(1.0 + absolute_x / epsilon),
+                      absolute_x - c)
+    loss = tf.reduce_mean(tf.reduce_sum(losses, axis=[1, 2]), axis=0)
+    return loss

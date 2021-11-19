@@ -3,7 +3,7 @@ Description:
 Author: notplus
 Date: 2021-11-18 10:28:12
 LastEditors: notplus
-LastEditTime: 2021-11-18 14:51:06
+LastEditTime: 2021-11-19 09:23:04
 FilePath: /train.py
 
 Copyright (c) 2021 notplus
@@ -13,7 +13,7 @@ Copyright (c) 2021 notplus
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from pfld import PFLD
+from pfld import PFLD, PFLD_wing_loss_fn
 import tfrecord
 import config as cfg
 
@@ -23,6 +23,7 @@ val_dataset = tfrecord.get_dataset(cfg.VAL_TFREC, cfg.BATCH_SIZE)
 name = "pfld"
 
 model = PFLD(summary=True)
+# model = PFLD_wing_loss_fn(summary=True)
 
 # Callbacks
 checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(

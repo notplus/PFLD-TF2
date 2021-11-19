@@ -3,7 +3,7 @@ Description:
 Author: notplus
 Date: 2021-11-18 10:29:28
 LastEditors: notplus
-LastEditTime: 2021-11-18 15:43:47
+LastEditTime: 2021-11-18 16:09:41
 FilePath: /pfld.py
 
 Copyright (c) 2021 notplus
@@ -11,7 +11,7 @@ Copyright (c) 2021 notplus
 
 import tensorflow as tf
 import tensorflow.keras.layers as layers
-from losses import loss_fn
+import losses
 
 def _inverted_res_block(inputs, expansion, stride, filters, use_res_connect, stage=1, block_id=1, expand=True, output2=False):
     in_channels = tf.keras.backend.int_shape(inputs)[-1]
@@ -166,7 +166,7 @@ class PFLD(tf.keras.Model):
             angle, landmarks = self(img_tensor, training=True)  # Forward pass
 
             # Compute our own loss
-            weighted_loss , loss = loss_fn(attribute_gt, landmark_gt, euler_angle_gt, angle, landmarks)
+            weighted_loss, loss = losses.loss_fn(attribute_gt, landmark_gt, euler_angle_gt, angle, landmarks)
 
         # Compute gradients
         trainable_vars = self.trainable_variables
@@ -197,6 +197,58 @@ class PFLD(tf.keras.Model):
         # If you don't implement this property, you have to call
         # `reset_states()` yourself at the time of your choosing.
         return [self.loss_tracker, self.loss_tracker_2]
+
+class PFLD_wing_loss_fn(tf.keras.Model):
+    def __init__(self, input_size=112, summary=False) -> None:
+        super(PFLD_wing_loss_fn, self).__init__()
+        self.pfld_inference = create_pfld_inference(input_size=input_size)
+
+        self.loss_tracker = tf.keras.metrics.Mean(name="loss")
+
+        if summary:
+            print(self.pfld_inference.summary())
+        
+
+    def call(self, x):
+        _, landmarks = self.pfld_inference(x)
+        return landmarks
+
+    def train_step(self, data):
+        img_tensor, _, landmark_gt, _ = data
+        
+        with tf.GradientTape() as tape:
+            landmarks = self(img_tensor, training=True)  # Forward pass
+
+            # Compute our own loss
+            loss = losses.wing_loss(landmark_gt, landmarks)
+
+        # Compute gradients
+        trainable_vars = self.trainable_variables
+        gradients = tape.gradient(loss, trainable_vars)
+        # Update weights
+        self.optimizer.apply_gradients(zip(gradients, trainable_vars))
+        # Update metrics (includes the metric that tracks the loss)
+        self.loss_tracker.update_state(loss)
+        # Return a dict mapping metric names to current value
+        return {"loss": self.loss_tracker.result()}
+
+    def test_step(self, data):
+        img_tensor, _, landmark_gt, _ = data
+        
+        landmarks = self(img_tensor, training=False)  # Forward pass
+        
+        loss = tf.reduce_mean(tf.reduce_sum((landmark_gt - landmarks) * (landmark_gt - landmarks)))
+        self.loss_tracker.update_state(loss)
+        return {"loss": self.loss_tracker.result()}
+
+    @property
+    def metrics(self):
+        # We list our `Metric` objects here so that `reset_states()` can be
+        # called automatically at the start of each epoch
+        # or at the start of `evaluate()`.
+        # If you don't implement this property, you have to call
+        # `reset_states()` yourself at the time of your choosing.
+        return [self.loss_tracker]
 
 
 # if __name__ == '__main__':
