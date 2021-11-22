@@ -25,6 +25,11 @@ Implementation of PFLD A Practical Facial Landmark Detector by Tensorflow 2.
    >
    > $ python3 SetPreparation.py
 
+   Generate tfrecord:
+   ```shell
+   python generate_tfrecord.py
+   ```
+
 3. Train
 
    You can change configurations in `train.py` and `config.py`. For training, just execute one line code.
