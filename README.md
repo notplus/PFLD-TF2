@@ -50,3 +50,4 @@ Implementation of PFLD A Practical Facial Landmark Detector by Tensorflow 2.
 
 ## Reference
 1. [PFLD-pytorch](https://github.com/polarisZhao/PFLD-pytorch)
+2. [PFLD-Ultralight](https://github.com/AnthonyF333/FaceLandmark_PFLD_UltraLight)
