@@ -3,7 +3,7 @@
 Implementation of PFLD A Practical Facial Landmark Detector by Tensorflow 2.
 
 ## Usage
-1. Requirements: tensorflow >= 2.0.0, numpy, opencv
+1. Requirements: tensorflow >= 2.0.0, numpy, opencv, pytorch (optional)
 
 2. Datasets
 
@@ -27,7 +27,7 @@ Implementation of PFLD A Practical Facial Landmark Detector by Tensorflow 2.
 
    Generate tfrecord:
    ```shell
-   python generate_tfrecord.py
+   python tools/generate_tfrecord.py
    ```
 
 3. Train
@@ -42,11 +42,18 @@ Implementation of PFLD A Practical Facial Landmark Detector by Tensorflow 2.
 
    Just read `test.py` and load weight you want.
 
+5. Camera test
+   
+   You should check if pytorch is installed, and load weight you want.
+
+
 
 ## Others
 1. For loss function, `attributes_w_n` may all be zero, which makes loss equal to zero. So it may need to rethink about the weight.
 
-2. We also provide a model called `PFLD_wing_loss_fn` which uses wing_loss and removes auxiliarynet. 
+2. We provide a model called `PFLD_wing_loss_fn` which uses wing_loss and removes auxiliarynet. 
+
+3. A model called `PFLD_Ultralight` is available, which uses GhostBottleneck. 
 
 ## Reference
 1. [PFLD-pytorch](https://github.com/polarisZhao/PFLD-pytorch)
